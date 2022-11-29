@@ -50,9 +50,9 @@ public class Board : IEnumerable<((int, int), Unit)>
 
 	private static string DefaultGetNotation(int x, int y) => $"{(char)('a' + x)}{y + 1}";
 	private static int DefaultTransformDeltaX(int x, Team team) => x;
-	private static int DefaultTransformDeltaY(int y, Team team) => 
+	private static int DefaultTransformDeltaY(int y, Team team) =>
 		team == Team.White
-		? y 
+		? y
 		: -y;
 
 	private bool DefaultWithinBoard(int x, int y)

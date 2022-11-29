@@ -22,7 +22,7 @@ public class MoveType
 		}
 
 		var shortformMoves = Shortform.CompileShortform(ShortForm);
-		
+
 		if (_providedGenerateMoves != EmptyMoveGenerator.Instance)
 		{
 			GenerateMovesDelegate AppendGenerateMoves(GenerateMovesDelegate shortformMoves)

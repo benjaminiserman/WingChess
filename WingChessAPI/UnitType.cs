@@ -1,4 +1,5 @@
 ﻿namespace WingChessAPI;
+
 using System.Text.RegularExpressions;
 
 public class UnitType
@@ -38,14 +39,14 @@ public class UnitType
 
         if (ShortForm is string shortformString && !string.IsNullOrWhiteSpace(shortformString))
         {
-			MoveTypes = Regex.Split(shortformString, @",\s*")
+            MoveTypes = Regex.Split(shortformString, @",\s*")
                 .Select(moveString => new MoveType(shortForm: moveString))
                 .ToList();
             GenerateMoves = CollateMoves(MoveTypes);
         }
     }
 
-    public Unit CreateUnit(Team team) => new(Name, team);
+    public Unit CreateUnit(Team team, string id) => new(Name, team, id);
 }
 
 /*self.name: str = name

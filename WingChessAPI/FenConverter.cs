@@ -14,7 +14,7 @@ public static class FenConverter
 		var fullmoveNumber = split[5];
 
 		var ranks = piecePlacement.Split('/');
-		for (int i = 0; i < ranks.Length; i++)
+		for (var i = 0; i < ranks.Length; i++)
 		{
 			var rankId = ranks.Length - i - 1;
 			var fileId = 0;
@@ -28,8 +28,9 @@ public static class FenConverter
 				{
 					board[fileId, rankId] = fenMap[c].CreateUnit(
 						char.IsUpper(c)
-						? Team.White
-						: Team.Black
+							? Team.White
+							: Team.Black,
+						board.GetNotation(fileId, rankId)
 					);
 					fileId++;
 				}

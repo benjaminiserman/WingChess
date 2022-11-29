@@ -1,6 +1,5 @@
 ﻿namespace WingChessAPI;
 
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 public static class Shortform
@@ -38,7 +37,7 @@ public static class Shortform
 					yield return -x;
 					break;
 				default:
-					throw new($"invalid shortform format: {xSign}{x}"); 
+					throw new($"invalid shortform format: {xSign}{x}");
 			}
 		}
 
@@ -161,7 +160,7 @@ public static class Shortform
 						{
 							yield return new(board, x, y, dx, dy);
 						}
-					}	
+					}
 				}
 				else
 				{

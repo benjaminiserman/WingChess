@@ -4,23 +4,23 @@ using Newtonsoft.Json.Linq;
 public class Game
 {
     public Dictionary<string, UnitType> UnitSet { get; set; } = new();
-	public List<Rule> Rules { get; set; } = new();
+    public List<Rule> Rules { get; set; } = new();
     public string? DefaultBoardFen { get; set; } = null;
-	public Dictionary<char, UnitType> FenMap { get; set; } = new();
+    public Dictionary<char, UnitType> FenMap { get; set; } = new();
     public int MaxMove { get; set; } = 16;
 
-	private Func<Team, Team>? _nextToMoveField = null;
-	public Func<Team, Team> NextToMove
-	{
-		get => _nextToMoveField ?? DefaultNextToMove;
-		set => _nextToMoveField = value;
-	}
-	private static Team DefaultNextToMove(Team team) =>
-		team == Team.White
-		? Team.Black
-		: Team.White;
+    private Func<Team, Team>? _nextToMoveField = null;
+    public Func<Team, Team> NextToMove
+    {
+        get => _nextToMoveField ?? DefaultNextToMove;
+        set => _nextToMoveField = value;
+    }
+    private static Team DefaultNextToMove(Team team) =>
+        team == Team.White
+        ? Team.Black
+        : Team.White;
 
-	public static Game Chess
+    public static Game Chess
     {
         get
         {
@@ -37,16 +37,16 @@ public class Game
         {
             bool TryAssignFen(char character)
             {
-				var lowercase = char.ToLower(character);
-				if (!fenSet.Contains(lowercase))
-				{
-					fenSet.Add(lowercase);
+                var lowercase = char.ToLower(character);
+                if (!fenSet.Contains(lowercase))
+                {
+                    fenSet.Add(lowercase);
                     unit.Fen = lowercase;
-					return true;
-				}
+                    return true;
+                }
 
                 return false;
-			}
+            }
 
             var fenAssigned = false;
             var assignedChar = '\0';
@@ -62,16 +62,16 @@ public class Game
 
             if (!fenAssigned)
             {
-				foreach (var character in "abcdefghijklmnopqrstuvwxyz")
-				{
-					fenAssigned = TryAssignFen(character);
-					if (fenAssigned)
-					{
-						assignedChar = character;
-						break;
-					}
-				}
-			}
+                foreach (var character in "abcdefghijklmnopqrstuvwxyz")
+                {
+                    fenAssigned = TryAssignFen(character);
+                    if (fenAssigned)
+                    {
+                        assignedChar = character;
+                        break;
+                    }
+                }
+            }
 
             if (!fenAssigned)
             {
@@ -79,8 +79,8 @@ public class Game
             }
 
             FenMap.Add(char.ToLower(assignedChar), unit);
-			FenMap.Add(char.ToUpper(assignedChar), unit);
-		}
+            FenMap.Add(char.ToUpper(assignedChar), unit);
+        }
     }
 
     void LoadGame(string loadFilePath)
@@ -89,7 +89,7 @@ public class Game
         var json = JObject.Parse(File.ReadAllText(loadFilePath));
         DefaultBoardFen = (string?)json["default_board"];
 
-		if (json["unit_set"] is JObject unit_set_data)
+        if (json["unit_set"] is JObject unit_set_data)
         {
             foreach (var kvp in unit_set_data)
             {
@@ -99,15 +99,15 @@ public class Game
                 var newUnit = new UnitType(name)
                 {
                     ShortForm = (string?)token["shortform"],
-				};
+                };
 
-				var tags = (JArray)json["tags"]!;
-				if (tags is not null)
+                var tags = (JArray)json["tags"]!;
+                if (tags is not null)
                 {
                     newUnit.Tags.AddRange(tags.Cast<string>());
                 }
 
-				newUnit.Value = (int?)json["value"];
+                newUnit.Value = (int?)json["value"];
 
                 newUnit.CompileMovesFromShortform();
                 UnitSet.Add(newUnit.Name, newUnit);
@@ -120,14 +120,14 @@ public class Game
         {
             foreach (var kvp in ruleData)
             {
-                Rules.Add(new(kvp.Key, 
-                    (string)kvp.Value!["condition"]!, 
-                    (string)kvp.Value!["stage"]!, 
+                Rules.Add(new(kvp.Key,
+                    (string)kvp.Value!["condition"]!,
+                    (string)kvp.Value!["stage"]!,
                     (string)kvp.Value!["result"]!)
                 );
 
                 //Rules[^1].Compile();
             }
         }
-	}
+    }
 }

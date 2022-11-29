@@ -1,17 +1,16 @@
-﻿using WingChessAPI;
-using System.Text.RegularExpressions;
-using System.ComponentModel.Design.Serialization;
+﻿using System.Text.RegularExpressions;
+using WingChessAPI;
 
 var chess = Game.Chess;
 
 void PrintBoard(Board board)
 {
-	int? minX = null, 
-		minY = null, 
-		maxX = null, 
+	int? minX = null,
+		minY = null,
+		maxX = null,
 		maxY = null;
 
-	if (board.XSize is int xSize 
+	if (board.XSize is int xSize
 		&& board.YSize is int ySize)
 	{
 		minX = 0;
