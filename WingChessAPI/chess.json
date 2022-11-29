@@ -1,0 +1,67 @@
+{
+	"default_board": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+	"unit_set": {
+		"king": {
+			"tags": ["royal", "piece", "can_castle"],
+			"shortform": "1/1, *1/0"
+		},
+		"queen": {
+			"tags": ["major_piece", "piece", "rider", "slider"],
+			"value": 9,
+			"shortform": "g*1/0, g1/1"
+		},
+		"rook": {
+			"tags": ["major_piece", "piece", "rider", "slider", "castler"],
+			"value": 5,
+			"shortform": "g*1/0"
+		},
+		"bishop": {
+			"tags": ["minor_piece", "piece", "rider", "slider"],
+			"value": 3,
+			"shortform": "g1/1"
+		},
+		"knight": {
+			"tags": ["minor_piece", "piece", "leaper"],
+			"value": 3,
+			"shortform": "l*1/2"
+		},
+		"pawn": {
+			"tags": ["pawn", "can_promote", "en_passant"],
+			"value": 1,
+			"shortform": "m0/+1, c1/+1, im0/+2"
+		}
+	},
+	"rules_file": "chess_rules.py",
+	"rules": {
+		"checkmate": {
+			"stage": "turn_start",
+			"condition": "current_player_checkmated",
+			"result": "other_player_win"
+		},
+		"allows_royal_capture": {
+			"stage": "turn_end",
+			"condition": "royal_capture_possible",
+			"result": "illegal"
+		},
+		"stalemate": {
+			"stage": "turn_start",
+			"condition": "current_player_stalemated",
+			"result": "stalemate"
+		},
+		"dead_position": {
+			"stage": "turn_start",
+			"condition": "dead_position",
+			"result": "draw"
+		},
+		"threefold_repetition": {
+			"stage": "turn_start",
+			"condition": "threefold_repetition",
+			"result": "draw"
+		},
+		"fifty_move_draw": {
+			"stage": "turn_start",
+			"condition": "fifty_moves_without_capture",
+			"result": "draw"
+		}
+	}
+}
