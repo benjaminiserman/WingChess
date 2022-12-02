@@ -1,6 +1,7 @@
 ﻿namespace WingChessAPI;
 
 using System.Collections;
+using System.Reflection;
 
 public class Board : IEnumerable<((int, int), Unit)>
 {
@@ -9,16 +10,10 @@ public class Board : IEnumerable<((int, int), Unit)>
 	public Dictionary<string, dynamic> Variables { get; set; } = new();
 	public List<string> Tags { get; set; } = new();
 	public List<Move> History { get; set; } = new();
-
-	public Game Game { get; private init; }
-
-	public Board(Game game)
-	{
-		Game = game;
-	}
-
+	public List<Board> BoardHistory { get; set; } = new();
 	public int? XSize { get; private set; }
 	public int? YSize { get; private set; }
+	public bool AllowOutOfTimePlay { get; set; } = false;
 
 	private Func<int, int, string>? _getNotationField = null;
 	public Func<int, int, string> GetNotation
@@ -47,6 +42,34 @@ public class Board : IEnumerable<((int, int), Unit)>
 		get => _withinBoardField ?? DefaultWithinBoard;
 		set => _withinBoardField = value;
 	}
+
+	public Game Game { get; private init; }
+
+	public Board(Game game)
+	{
+		Game = game;
+		BoardHistory.Add(this);
+	}
+
+	public Board(Board board, List<Move> history, List<Board> boardHistory)
+	{
+		Game = board.Game;
+		Units = new(board.Units);
+		ToMove = board.ToMove;
+		Variables = new(board.Variables);
+		Tags = new(board.Tags);
+		History = history;
+		BoardHistory = boardHistory;
+		XSize = board.XSize;
+		YSize = board.YSize;
+		_getNotationField = board._getNotationField;
+		_transformDeltaXField = board._transformDeltaXField;
+		_transformDeltaYField = board._transformDeltaYField;
+		_withinBoardField = board._withinBoardField;
+		AllowOutOfTimePlay = board.AllowOutOfTimePlay;
+	}
+
+	public Board(Board board) : this(board, new(board.History), new(board.BoardHistory)) { }
 
 	private static string DefaultGetNotation(int x, int y) => $"{(char)('a' + x)}{y + 1}";
 	private static int DefaultTransformDeltaX(int x, Team team) => x;
@@ -92,10 +115,26 @@ public class Board : IEnumerable<((int, int), Unit)>
 		}
 	}
 
-	public void ApplyMove(Move move)
+	public Board ApplyMove(Move move)
 	{
-		move.Result(this, move);
+		if (move.Unit.Team != ToMove && !AllowOutOfTimePlay)
+		{
+			throw new($"{move.Unit.Team} attempted to play on {ToMove}'s turn. If this was intended, set AllowOutOfTimePlay to true.");
+		}
+
+		Board newBoard = new(this, History, BoardHistory)
+		{
+			ToMove = Game.NextToMove(ToMove)
+		};
+
+		var result = move.Result;
+		result ??= move.MoveType.Result;
+		result(newBoard, move);
+
 		History.Add(move);
+		BoardHistory.Add(newBoard);
+
+		return newBoard;
 	}
 
 	public UnitType GetUnitType(Unit unit) => Game.UnitSet[unit.Name];
@@ -141,4 +180,7 @@ public class Board : IEnumerable<((int, int), Unit)>
 			}
 		}
 	}
+
+	public Unit this[string id] => Units.FirstOrDefault(x => x.Value.Id == id).Value;
+	public Unit this[Unit unit] => this[unit.Id];
 }

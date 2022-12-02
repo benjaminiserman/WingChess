@@ -101,13 +101,8 @@ void PrintBoard(Board board)
 	Console.WriteLine();
 }
 
-void DoInput(Board board, List<Move> availableMoves)
-{/*
-	foreach (var move in availableMoves)
-	{
-		Console.WriteLine($" - {move.Notation}, {move.Unit.Name}");
-	}
-*/
+Board DoInput(Board board, List<Move> availableMoves)
+{
 	while (true)
 	{
 		var inputMove = Console.ReadLine()!.Trim();
@@ -155,8 +150,7 @@ void DoInput(Board board, List<Move> availableMoves)
 			}
 			else if (filter.Count == 1)
 			{
-				board.ApplyMove(filter[0]);
-				break;
+				return board.ApplyMove(filter[0]);
 			}
 			else
 			{
@@ -170,9 +164,18 @@ void DoInput(Board board, List<Move> availableMoves)
 	}
 }
 
-void DoRandom(Board board, List<Move> availableMoves)
+Board DoRandom(Board board, List<Move> availableMoves)
 {
-	board.ApplyMove(availableMoves[Random.Shared.Next(availableMoves.Count)]);
+	return board.ApplyMove(availableMoves[Random.Shared.Next(availableMoves.Count)]);
+}
+
+void PrintMoves(List<Move> availableMoves)
+{
+	Console.WriteLine("Available moves:");
+	foreach (var move in availableMoves)
+	{
+		Console.WriteLine($" - {move.Notation}");
+	}
 }
 
 var board = FenConverter.ConvertFen(chess.DefaultBoardFen!, chess.FenMap);
@@ -180,13 +183,16 @@ var board = FenConverter.ConvertFen(chess.DefaultBoardFen!, chess.FenMap);
 var team = Team.White;
 while (true)
 {
-	PrintBoard(board);
-
 	var availableMoves = board.GetAvailableMoves(team).ToList();
-	DoInput(board, availableMoves);
-	team = board.Game.NextToMove(team);
+	PrintMoves(availableMoves);
+	PrintBoard(board);
+	board = DoInput(board, availableMoves);
+	team = board.ToMove;
 
 	availableMoves = board.GetAvailableMoves(team).ToList();
-	DoRandom(board, availableMoves);
-	team = board.Game.NextToMove(team);
+	PrintMoves(availableMoves);
+	//DoRandom(board, availableMoves);
+	PrintBoard(board);
+	board = DoInput(board, availableMoves);
+	team = board.ToMove;
 }

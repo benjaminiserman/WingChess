@@ -20,15 +20,25 @@ public class Game
         ? Team.Black
         : Team.White;
 
+    private static Game? _cachedChess = null;
     public static Game Chess
     {
         get
         {
-            var chess = new Game();
-            chess.LoadGame("chess.json");
-            return chess;
+            if (_cachedChess is null)
+            {
+                ReloadChess();
+			}
+			
+            return _cachedChess!;
         }
     }
+
+    public static void ReloadChess()
+    {
+		_cachedChess = new();
+		_cachedChess.LoadGame("chess.json");
+	}
 
     private void AssignFenToUnits()
     {
@@ -85,7 +95,6 @@ public class Game
 
     void LoadGame(string loadFilePath)
     {
-
         var json = JObject.Parse(File.ReadAllText(loadFilePath));
         DefaultBoardFen = (string?)json["default_board"];
 
@@ -101,15 +110,33 @@ public class Game
                     ShortForm = (string?)token["shortform"],
                 };
 
-                var tags = (JArray)json["tags"]!;
+                var tags = (JArray?)token["tags"];
                 if (tags is not null)
                 {
-                    newUnit.Tags.AddRange(tags.Cast<string>());
+                    foreach (var tag in tags)
+                    {
+                        newUnit.Tags.Add((string)tag!);
+                    }
                 }
 
-                newUnit.Value = (int?)json["value"];
+                newUnit.Value = (int?)token["value"];
 
-                newUnit.CompileMovesFromShortform();
+				newUnit.CompileMovesFromShortform();
+
+				var specialMoves = (JArray?)token["special_moves"];
+                if (specialMoves is not null)
+                {
+                    var specialMovesList = specialMoves
+                        .Select(x => new SpecialMoveData(
+                            (string?)x["method"],
+                            (string?)x["shortform"],
+                            ((JArray?)x["tags"])?.Select(s => (string)s!).ToList() ?? new()))
+                        .ToList();
+
+                    newUnit.SpecialMoveData = specialMovesList;
+                    newUnit.CompileSpecialMoves();
+                }
+                
                 UnitSet.Add(newUnit.Name, newUnit);
             }
 
@@ -123,8 +150,8 @@ public class Game
                 Rules.Add(new(kvp.Key,
                     (string)kvp.Value!["condition"]!,
                     (string)kvp.Value!["stage"]!,
-                    (string)kvp.Value!["result"]!)
-                );
+                    (string)kvp.Value!["result"]!
+                ));
 
                 //Rules[^1].Compile();
             }

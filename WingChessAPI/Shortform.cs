@@ -75,7 +75,7 @@ public static class Shortform
 		return deltaSet;
 	}
 
-	private static GenerateMovesDelegate GliderGenerator(HashSet<(int, int)> deltaSet)
+	private static GenerateMovesDelegate GliderGenerator(HashSet<(int, int)> deltaSet, MoveType moveType)
 	{
 		IEnumerable<Move> GenerateMoves(Board board, int x, int y)
 		{
@@ -90,12 +90,12 @@ public static class Shortform
 					{
 						if (board[dx, dy] != Unit.Empty)
 						{
-							yield return new(board, x, y, dx, dy);
+							yield return new(board, x, y, dx, dy, moveType);
 							break;
 						}
 						else
 						{
-							yield return new(board, x, y, dx, dy);
+							yield return new(board, x, y, dx, dy, moveType);
 						}
 					}
 				}
@@ -105,7 +105,7 @@ public static class Shortform
 		return GenerateMoves;
 	}
 
-	private static GenerateMovesDelegate LeaperGenerator(HashSet<(int, int)> deltaSet)
+	private static GenerateMovesDelegate LeaperGenerator(HashSet<(int, int)> deltaSet, MoveType moveType)
 	{
 		IEnumerable<Move> GenerateMoves(Board board, int x, int y)
 		{
@@ -116,7 +116,7 @@ public static class Shortform
 
 				if (board.WithinBoard(dx, dy))
 				{
-					yield return new(board, x, y, dx, dy);
+					yield return new(board, x, y, dx, dy, moveType);
 				}
 			}
 		}
@@ -124,7 +124,7 @@ public static class Shortform
 		return GenerateMoves;
 	}
 
-	private static GenerateMovesDelegate DefaultGenerator(HashSet<(int, int)> deltaSet)
+	private static GenerateMovesDelegate DefaultGenerator(HashSet<(int, int)> deltaSet, MoveType moveType)
 	{
 		IEnumerable<Move> GenerateMoves(Board board, int x, int y)
 		{
@@ -158,7 +158,7 @@ public static class Shortform
 						var dy = y + board.TransformDeltaY(deltaY, board[x, y].Team);
 						if (board.WithinBoard(dx, dy))
 						{
-							yield return new(board, x, y, dx, dy);
+							yield return new(board, x, y, dx, dy, moveType);
 						}
 					}
 				}
@@ -171,7 +171,7 @@ public static class Shortform
 					{
 						if (board.WithinBoard(dx, dy))
 						{
-							yield return new(board, x, y, dx, dy);
+							yield return new(board, x, y, dx, dy, moveType);
 						}
 					}
 				}
@@ -254,7 +254,7 @@ public static class Shortform
 		return GenerateMoves;
 	}
 
-	public static GenerateMovesDelegate CompileShortform(string shortform)
+	public static GenerateMovesDelegate CompileShortform(string shortform, MoveType moveType)
 	{
 		var match = Regex.Match(shortform, @"(?<flags>[a-z]*)(?<delta>\*?[+-]?\d+/[+-]?\d+)");
 		if (match is null || match == Match.Empty)
@@ -270,15 +270,15 @@ public static class Shortform
 
 		if (flags.Contains(_shortformMap["glider"]))
 		{
-			moveFunction = GliderGenerator(deltaSet);
+			moveFunction = GliderGenerator(deltaSet, moveType);
 		}
 		else if (flags.Contains(_shortformMap["leaper"]))
 		{
-			moveFunction = LeaperGenerator(deltaSet);
+			moveFunction = LeaperGenerator(deltaSet, moveType);
 		}
 		else
 		{
-			moveFunction = DefaultGenerator(deltaSet);
+			moveFunction = DefaultGenerator(deltaSet, moveType);
 		}
 
 		if (flags.Contains(_shortformMap["initial_only"]))

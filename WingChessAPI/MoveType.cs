@@ -2,52 +2,24 @@
 
 public class MoveType
 {
-	private GenerateMovesDelegate _providedGenerateMoves;
 	public GenerateMovesDelegate GenerateMoves { get; private set; } = EmptyMoveGenerator.Instance;
 	public string? ShortForm = null;
 	public ResultDelegate Result { get; private set; } = DefaultResult.Instance;
+	public List<string> Tags { get; set; } = new();
 
-	public MoveType(GenerateMovesDelegate? generateMoves = null, string? shortForm = null)
+	public MoveType(GenerateMovesWrapperDelegate? generateMovesWrapper = null, string? shortForm = null)
 	{
-		_providedGenerateMoves = generateMoves ?? EmptyMoveGenerator.Instance;
 		ShortForm = shortForm;
-		CompileShortform();
-	}
 
-	public void CompileShortform()
-	{
-		if (ShortForm is null)
+		GenerateMovesDelegate shortformMoves = EmptyMoveGenerator.Instance;
+		if (ShortForm is not null)
 		{
-			throw new ArgumentNullException();
+			shortformMoves = Shortform.CompileShortform(ShortForm, this);
 		}
 
-		var shortformMoves = Shortform.CompileShortform(ShortForm);
-
-		if (_providedGenerateMoves != EmptyMoveGenerator.Instance)
-		{
-			GenerateMovesDelegate AppendGenerateMoves(GenerateMovesDelegate shortformMoves)
-			{
-				IEnumerable<Move> TrueGenerateMoves(Board board, int x, int y)
-				{
-					foreach (var move in shortformMoves(board, x, y))
-					{
-						yield return move;
-					}
-
-					foreach (var move in _providedGenerateMoves(board, x, y))
-					{
-						yield return move;
-					}
-				}
-
-				return TrueGenerateMoves;
-			}
-
-			GenerateMoves = AppendGenerateMoves(shortformMoves);
-		}
-		else
-		{
-			GenerateMoves = shortformMoves;
-		}
+		GenerateMoves = 
+			generateMovesWrapper is null 
+			? shortformMoves 
+			: generateMovesWrapper(shortformMoves, this);
 	}
 }

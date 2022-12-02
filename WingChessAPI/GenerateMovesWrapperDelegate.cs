@@ -1,0 +1,3 @@
+﻿namespace WingChessAPI;
+
+public delegate GenerateMovesDelegate GenerateMovesWrapperDelegate(GenerateMovesDelegate generateMoves, MoveType moveType);

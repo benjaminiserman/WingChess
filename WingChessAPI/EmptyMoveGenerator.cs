@@ -8,8 +8,16 @@ public static class EmptyMoveGenerator
 		yield break;
 	}
 
-	public static IEnumerable<(Move, ResultDelegate)> WithResultInstance(Board _, int _2, int _3)
+	public static GenerateMovesDelegate Wrapper(GenerateMovesDelegate generateMoves, MoveType _)
 	{
-		yield break;
+		IEnumerable<Move> GenerateMoves(Board board, int x, int y)
+		{
+			foreach (var move in generateMoves(board, x, y))
+			{
+				yield return move;
+			}
+		}
+
+		return GenerateMoves;
 	}
 }

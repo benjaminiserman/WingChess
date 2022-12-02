@@ -1,6 +1,6 @@
 ﻿namespace WingChessAPI;
 
-public class Unit
+public struct Unit
 {
 	public string Name { get; set; }
 	public Team Team { get; set; }
@@ -8,12 +8,17 @@ public class Unit
 
 	public Unit(string name, Team team, string id)
 	{
+		if (id == Empty.Id)
+		{
+			throw new ArgumentException($"Unit Id cannot be set to {Empty.Id}.");
+		}
+
 		Name = name;
 		Team = team;
 		Id = id;
 	}
 
-	public static Unit Empty => new(string.Empty, new(string.Empty), string.Empty);
+	public static Unit Empty => default;
 
 	public override bool Equals(object? obj)
 	{
