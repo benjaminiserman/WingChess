@@ -5,6 +5,8 @@ public class Game
 {
     public Dictionary<string, UnitType> UnitSet { get; set; } = new();
     public List<Rule> Rules { get; set; } = new();
+    public List<string> DefaultTags { get; set; } = new();
+    public Dictionary<string, dynamic> DefaultVariables { get; set; } = new();
     public string? DefaultBoardFen { get; set; } = null;
     public Dictionary<char, UnitType> FenMap { get; set; } = new();
     public int MaxMove { get; set; } = 16;
@@ -98,7 +100,25 @@ public class Game
         var json = JObject.Parse(File.ReadAllText(loadFilePath));
         DefaultBoardFen = (string?)json["default_board"];
 
-        if (json["unit_set"] is JObject unit_set_data)
+		var tags = (JArray?)json["tags"];
+		if (tags is not null)
+		{
+			foreach (var tag in tags)
+			{
+				DefaultTags.Add((string)tag!);
+			}
+		}
+
+        var variables = (JObject?)json["variables"];
+        if (variables is not null)
+        {
+            foreach (var variable in variables)
+            {
+                DefaultVariables.Add(variable.Key, variable.Value!);
+            }
+        }
+
+		if (json["unit_set"] is JObject unit_set_data)
         {
             foreach (var kvp in unit_set_data)
             {
@@ -110,7 +130,7 @@ public class Game
                     ShortForm = (string?)token["shortform"],
                 };
 
-                var tags = (JArray?)token["tags"];
+                tags = (JArray?)token["tags"];
                 if (tags is not null)
                 {
                     foreach (var tag in tags)

@@ -1,6 +1,13 @@
 {
   "default_board": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  "assembly":  "", // put a dll name like Chess.dll here to load a dll
+  "assembly": "", // put a dll name like Chess.dll here to load a dll
+  "tags": [ "absolute_castle" ],
+  "variables": {
+	"White_home_rank": 0,
+	"Black_home_rank": 7,
+	"White_promotion_rank": 7,
+	"Black_promotion_rank": 0
+  },
   "unit_set": {
 	"king": {
 	  "tags": [ "royal", "piece" ],
@@ -36,14 +43,14 @@
 	  "value": 1,
 	  "shortform": "m0/+1, c1/+1",
 	  "special_moves": [
-	    {
-	      "method": "WingChessAPI::EnPassant",
-	      "shortform": "m1/+1"
-	    },
-	    {
-	      "shortform": "im0/+2",
-	      "tags": [ "en_passant" ]
-	    }
+		{
+		  "method": "WingChessAPI::EnPassant",
+		  "shortform": "m1/+1"
+		},
+		{
+		  "shortform": "im0/+2",
+		  "tags": [ "en_passant" ]
+		}
 	  ],
 	  "macros": "WingChessAPI::AllNonRoyalPromotion"
 	}

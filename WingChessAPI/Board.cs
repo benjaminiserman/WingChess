@@ -3,7 +3,7 @@
 using System.Collections;
 using System.Reflection;
 
-public class Board : IEnumerable<((int, int), Unit)>
+public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 {
 	private Dictionary<(int, int), Unit> Units { get; set; } = new();
 	public Team ToMove { get; set; } = Team.White;
@@ -48,6 +48,8 @@ public class Board : IEnumerable<((int, int), Unit)>
 	public Board(Game game)
 	{
 		Game = game;
+		Tags = new(game.DefaultTags);
+		Variables = new(game.DefaultVariables);
 		BoardHistory.Add(this);
 	}
 
@@ -138,7 +140,7 @@ public class Board : IEnumerable<((int, int), Unit)>
 	}
 
 	public UnitType GetUnitType(Unit unit) => Game.UnitSet[unit.Name];
-	public IEnumerator<((int, int), Unit)> GetEnumerator()
+	public IEnumerator<((int x, int y) pos, Unit unit)> GetEnumerator()
 	{
 		foreach (var kvp in Units)
 		{
@@ -181,6 +183,19 @@ public class Board : IEnumerable<((int, int), Unit)>
 		}
 	}
 
-	public Unit this[string id] => Units.FirstOrDefault(x => x.Value.Id == id).Value;
-	public Unit this[Unit unit] => this[unit.Id];
+	public Unit this[string id]
+	{
+		get => Units.FirstOrDefault(x => x.Value.Id == id).Value;
+		set
+		{
+			var (x, y) = Units.FirstOrDefault(x => x.Value.Id == id).Key;
+			this[x, y] = value;	
+		}
+	}
+
+	public Unit this[Unit unit]
+	{
+		get => this[unit.Id];
+		set => this[unit.Id] = value;
+	}
 }
