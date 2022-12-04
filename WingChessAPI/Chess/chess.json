@@ -14,7 +14,7 @@
 	  "shortform": "1/1, *1/0",
 	  "special_moves": [
 		{
-		  "method": "WingChessAPI::Castle"
+		  "method": "WingChessAPI.Chess::Castle"
 		}
 	  ]
 	},
@@ -44,7 +44,7 @@
 	  "shortform": "m0/+1, c1/+1",
 	  "special_moves": [
 		{
-		  "method": "WingChessAPI::EnPassant",
+		  "method": "WingChessAPI.Chess::EnPassant",
 		  "shortform": "m1/+1"
 		},
 		{
@@ -52,39 +52,30 @@
 		  "tags": [ "en_passant" ]
 		}
 	  ],
-	  "macros": "WingChessAPI::AllNonRoyalPromotion"
+	  "macros": "WingChessAPI.Chess::AllNonRoyalPromotion"
 	}
   },
   "rules": {
-	"checkmate": {
-	  "stage": "TurnStart",
-	  "condition": "CurrentPlayerCheckmated",
-	  "result": "OtherPlayerWin"
-	},
 	"allows_royal_capture": {
-	  "stage": "TurnEnd",
-	  "condition": "RoyalCapturePossible",
-	  "result": "Illegal"
-	},
-	"stalemate": {
-	  "stage": "TurnStart",
-	  "condition": "CurrentPlayerStalemated",
-	  "result": "Stalemate"
-	},
-	"dead_position": {
-	  "stage": "TurnStart",
-	  "condition": "DeadPosition",
-	  "result": "Draw"
-	},
-	"threefold_repetition": {
-	  "stage": "TurnStart",
-	  "condition": "ThreefoldRepetition",
-	  "result": "Draw"
-	},
-	"fifty_move_draw": {
-	  "stage": "TurnStart",
-	  "condition": "FiftyMovesWithoutCapture",
-	  "result": "Draw"
+	  "method": "WingChessAPI.Chess::MoveAllowedRoyalCapture",
+	  "allow_recursion": false
 	}
+  },
+  "end_states": {
+	"no_possible_moves": {
+	  "method": "WingChessAPI.Chess::NoPossibleMoves"
+	}
+	//"dead_position": {
+	//  "condition": "WingChessAPI.Chess::DeadPosition",
+	//  "result": "WingChessAPI.Chess::Draw"
+	//},
+	//"threefold_repetition": {
+	//  "condition": "WingChessAPI.Chess::ThreefoldRepetition",
+	//  "result": "WingChessAPI.Chess::Draw"
+	//},
+	//"fifty_move_draw": {
+	//  "condition": "WingChessAPI.Chess::FiftyMovesWithoutCapture",
+	//  "result": "WingChessAPI.Chess::Draw"
+	//}
   }
 }

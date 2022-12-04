@@ -57,36 +57,9 @@ public class UnitType
             GenerateMovesWrapperDelegate wrapper = EmptyMoveGenerator.Wrapper;
             if (move.Method is not null)
             {
-                var split = move.Method.Split("::");
-                var packageName = split[0];
-                var methodName = split[1];
-
-                var methods = Assembly
-                    .GetExecutingAssembly()
-                    .GetTypes()
-                    .Where(t => t.Namespace == packageName)
-                    .Where(t => t
-                        .GetMethods()
-                        .Any(m => m.Name == methodName))
-                    .Select(t => t
-                        .GetMethods()
-                        .First(m => m.Name == methodName))
-                    .ToList();
-
-                if (methods.Count == 0)
-                {
-                    throw new($"Compilation failed on unit {Name}. No method could be found that matches {packageName}::{methodName}.");
-                }
-                else if (methods.Count > 1)
-                {
-                    throw new($"Compilation failed on unit {Name}. Pattern {packageName}::{methodName} is ambiguous between {{ {string.Join(", ", methods.Select(m => m?.DeclaringType?.Name + "::" + m?.Name))} }}.");
-                }
-                else
-                {
-                    var methodFound = methods.First();
-                    wrapper = (GenerateMovesWrapperDelegate)Delegate.CreateDelegate(typeof(GenerateMovesWrapperDelegate), methodFound);
-                }
-            }
+                var methodFound = AssemblyHelper.AssertSingletonAndGetValue(AssemblyHelper.GetMethods(move.Method), Name, move.Method, "move");
+				wrapper = (GenerateMovesWrapperDelegate)Delegate.CreateDelegate(typeof(GenerateMovesWrapperDelegate), methodFound);
+			}
 
 			var moveType = new MoveType(wrapper, move.Shortform);
 			if (move.Tags is List<string> tags && tags.Count != 0)

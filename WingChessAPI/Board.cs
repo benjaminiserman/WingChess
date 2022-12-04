@@ -1,7 +1,6 @@
 ﻿namespace WingChessAPI;
 
 using System.Collections;
-using System.Reflection;
 
 public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 {
@@ -14,6 +13,7 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 	public int? XSize { get; private set; }
 	public int? YSize { get; private set; }
 	public bool AllowOutOfTimePlay { get; set; } = false;
+	public string EndResult { get; private set; } = Rule.Ongoing;
 
 	private Func<int, int, string>? _getNotationField = null;
 	public Func<int, int, string> GetNotation
@@ -53,15 +53,15 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 		BoardHistory.Add(this);
 	}
 
-	public Board(Board board, List<Move> history, List<Board> boardHistory)
+	public Board(Board board, List<Move> history, List<Board> boardHistory) // $$$ del parameters?
 	{
 		Game = board.Game;
 		Units = new(board.Units);
 		ToMove = board.ToMove;
 		Variables = new(board.Variables);
 		Tags = new(board.Tags);
-		History = history;
-		BoardHistory = boardHistory;
+		History = new(history);
+		BoardHistory = new(boardHistory);
 		XSize = board.XSize;
 		YSize = board.YSize;
 		_getNotationField = board._getNotationField;
@@ -69,6 +69,7 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 		_transformDeltaYField = board._transformDeltaYField;
 		_withinBoardField = board._withinBoardField;
 		AllowOutOfTimePlay = board.AllowOutOfTimePlay;
+		EndResult = board.EndResult;
 	}
 
 	public Board(Board board) : this(board, new(board.History), new(board.BoardHistory)) { }
@@ -101,8 +102,10 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 		YSize = y;
 	}
 
-	public IEnumerable<Move> GetAvailableMoves(Team team)
+	public IEnumerable<Move> GetAvailableMoves(Team? team = null, bool isRecursive = false)
 	{
+		team ??= ToMove;
+
 		foreach (var kvp in Units)
 		{
 			var (x, y) = kvp.Key;
@@ -111,14 +114,25 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 			{
 				foreach (var move in GetUnitType(unit).GenerateMoves(this, x, y))
 				{
-					yield return move;
+					var testBoard = ApplyMove(move, true);
+					if (!Game.Rules
+						.Any(rule => (rule.AllowsRecursion || !isRecursive) 
+							&& rule.Method(testBoard) == Rule.Illegal))
+					{
+						yield return move;
+					}
 				}
 			}
 		}
 	}
 
-	public Board ApplyMove(Move move)
+	public Board ApplyMove(Move move, bool isRecursive = false)
 	{
+		if (EndResult != Rule.Ongoing)
+		{
+			throw new($"Cannot apply move after game ended (with state {EndResult})");
+		}
+
 		if (move.Unit.Team != ToMove && !AllowOutOfTimePlay)
 		{
 			throw new($"{move.Unit.Team} attempted to play on {ToMove}'s turn. If this was intended, set AllowOutOfTimePlay to true.");
@@ -133,8 +147,20 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 		result ??= move.MoveType.Result;
 		result(newBoard, move);
 
-		History.Add(move);
-		BoardHistory.Add(newBoard);
+		newBoard.History.Add(move);
+		newBoard.BoardHistory.Add(newBoard);
+
+		if (!isRecursive)
+		{
+			foreach (var rule in Game.EndStateRules)
+			{
+				newBoard.EndResult = rule.Method(newBoard);
+				if (EndResult != Rule.Ongoing)
+				{
+					break;
+				}
+			}
+		}
 
 		return newBoard;
 	}

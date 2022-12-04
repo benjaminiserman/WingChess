@@ -20,6 +20,12 @@ public struct Unit
 
 	public static Unit Empty => default;
 
+	public bool StructuralEquals(Unit unit)
+	{
+		return Name == unit.Name
+			&& Team == unit.Team;
+	}
+
 	public override bool Equals(object? obj)
 	{
 		if (obj is not Unit unit)

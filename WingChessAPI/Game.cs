@@ -4,14 +4,15 @@ using Newtonsoft.Json.Linq;
 public class Game
 {
     public Dictionary<string, UnitType> UnitSet { get; set; } = new();
-    public List<Rule> Rules { get; set; } = new();
+    public List<Rule> Rules { get; private set; } = new();
+    public List<Rule> EndStateRules { get; private set; } = new();
     public List<string> DefaultTags { get; set; } = new();
     public Dictionary<string, dynamic> DefaultVariables { get; set; } = new();
     public string? DefaultBoardFen { get; set; } = null;
     public Dictionary<char, UnitType> FenMap { get; set; } = new();
     public int MaxMove { get; set; } = 16;
 
-    private Func<Team, Team>? _nextToMoveField = null;
+	private Func<Team, Team>? _nextToMoveField = null;
     public Func<Team, Team> NextToMove
     {
         get => _nextToMoveField ?? DefaultNextToMove;
@@ -39,7 +40,7 @@ public class Game
     public static void ReloadChess()
     {
 		_cachedChess = new();
-		_cachedChess.LoadGame("chess.json");
+		_cachedChess.LoadGame("Chess/chess.json");
 	}
 
     private void AssignFenToUnits()
@@ -147,10 +148,7 @@ public class Game
                 if (specialMoves is not null)
                 {
                     var specialMovesList = specialMoves
-                        .Select(x => new SpecialMoveData(
-                            (string?)x["method"],
-                            (string?)x["shortform"],
-                            ((JArray?)x["tags"])?.Select(s => (string)s!).ToList() ?? new()))
+                        .Select(x => new SpecialMoveData(x))
                         .ToList();
 
                     newUnit.SpecialMoveData = specialMovesList;
@@ -167,14 +165,18 @@ public class Game
         {
             foreach (var kvp in ruleData)
             {
-                Rules.Add(new(kvp.Key,
-                    (string)kvp.Value!["condition"]!,
-                    (string)kvp.Value!["stage"]!,
-                    (string)kvp.Value!["result"]!
-                ));
-
-                //Rules[^1].Compile();
+                Rules.Add(new(kvp));
+                Rules[^1].Compile();
             }
         }
-    }
+
+		if (json["end_states"] is JObject endStateData)
+		{
+			foreach (var kvp in endStateData)
+			{
+				EndStateRules.Add(new(kvp));
+				EndStateRules[^1].Compile();
+			}
+		}
+	}
 }

@@ -189,10 +189,22 @@ while (true)
 	board = DoInput(board, availableMoves);
 	team = board.ToMove;
 
+	if (board.EndResult != Rule.Ongoing)
+	{
+		Console.WriteLine($"Game ended with result: {board.EndResult}");
+		return;
+	}
+
 	availableMoves = board.GetAvailableMoves(team).ToList();
 	PrintMoves(availableMoves);
 	//DoRandom(board, availableMoves);
 	PrintBoard(board);
 	board = DoInput(board, availableMoves);
 	team = board.ToMove;
+
+	if (board.EndResult != Rule.Ongoing)
+	{
+		Console.WriteLine($"Game ended with result: {board.EndResult}");
+		return;
+	}
 }
