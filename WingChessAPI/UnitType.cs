@@ -11,6 +11,7 @@ public class UnitType
     public List<string> Tags { get; set; } = new();
     public char? Fen { get; set; }
     public List<SpecialMoveData> SpecialMoveData { get; set; } = new();
+    public List<string> MacroNames { get; set; } = new();
 
     public List<MoveType> MoveTypes { get; set; } = new();
     public GenerateMovesDelegate GenerateMoves
@@ -32,8 +33,6 @@ public class UnitType
         }
     }
 
-    public Func<Board, int, int, int, int, string> GetNotation { get; set; } = (board, oldX, oldY, newX, newY) => $"{board.GetNotation(oldX, oldY)}{board.GetNotation(newX, newY)}";
-
     public UnitType(string name)
     {
         Name = name;
@@ -53,7 +52,6 @@ public class UnitType
     {
         foreach (var move in SpecialMoveData)
         {
-            Console.WriteLine(move);
             GenerateMovesWrapperDelegate wrapper = EmptyMoveGenerator.Wrapper;
             if (move.Method is not null)
             {
@@ -69,6 +67,20 @@ public class UnitType
 
             MoveTypes.Add(moveType);
 		}
+    }
+
+    internal void CompileMacros()
+    {
+        foreach (var macroName in MacroNames)
+        {
+            GenerateMovesWrapperDelegate wrapper = EmptyMoveGenerator.Wrapper;
+            var methodFound = AssemblyHelper.AssertSingletonAndGetValue(AssemblyHelper.GetMethods(macroName), Name, macroName, "macro");
+            wrapper = (GenerateMovesWrapperDelegate)Delegate.CreateDelegate(typeof(GenerateMovesWrapperDelegate), methodFound);
+
+            MoveTypes = MoveTypes
+                .Select(moveType => new MoveType(moveType, wrapper))
+                .ToList();
+        }
     }
 
 	public Unit CreateUnit(Team team, string id) => new(Name, team, id);

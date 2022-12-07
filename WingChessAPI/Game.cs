@@ -154,8 +154,19 @@ public class Game
                     newUnit.SpecialMoveData = specialMovesList;
                     newUnit.CompileSpecialMoves();
                 }
-                
-                UnitSet.Add(newUnit.Name, newUnit);
+
+				var macros = (JArray?)token["macros"];
+				if (macros is not null)
+				{
+					var macrosList = macros
+						.Select(x => (string)x!)
+						.ToList();
+
+					newUnit.MacroNames = macrosList;
+                    newUnit.CompileMacros();
+				}
+
+				UnitSet.Add(newUnit.Name, newUnit);
             }
 
             AssignFenToUnits();

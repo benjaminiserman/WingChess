@@ -19,7 +19,7 @@ internal static class ChessSpecialMoves
                 if (enPassantee != Unit.Empty
                     && board.History.Count > 0
                     && board.History[^1].Unit == enPassantee
-                    && board.History[^1].MoveType.Tags.Contains("en_passant"))
+                    && board.History[^1].MoveType.Tags.Contains("en_passantable"))
                 {
                     yield return move with
                     {
@@ -34,7 +34,7 @@ internal static class ChessSpecialMoves
 
     public static GenerateMovesDelegate Castle(GenerateMovesDelegate _, MoveType moveType)
     {
-        ResultDelegate GetResult(Unit castle, int castleX, int castleY, Board board)
+        ResultDelegate GetResult(Unit castle, int castleX, int castleY)
         {
             void Result(Board board, Move move)
             {
@@ -51,8 +51,7 @@ internal static class ChessSpecialMoves
         IEnumerable<Move> GenerateMoves(Board board, int x, int y)
         {
             var castler = board[x, y];
-            if (!board.Tags.Contains($"{castler.Team}_castled")
-                && !board.History.Any(m => m.Unit == castler))
+            if (!board.History.Any(m => m.Unit == castler))
             { // $$$ add checks for check or squares attacked
                 var castlingUnits = board.BoardHistory[0]
                     .Where(kvp => board.GetUnitType(kvp.unit).Tags.Contains("castle")
@@ -78,7 +77,8 @@ internal static class ChessSpecialMoves
                             2, homeRank,
                             moveType,
                             board,
-                            GetResult(queenCastle.unit, 3, homeRank, board)
+                            GetResult(queenCastle.unit, 3, homeRank),
+                            _ => "O-O-O"
                         );
                     }
 
@@ -95,7 +95,8 @@ internal static class ChessSpecialMoves
                             6, homeRank,
                             moveType,
                             board,
-                            GetResult(kingCastle.unit, 5, homeRank, board)
+                            GetResult(kingCastle.unit, 5, homeRank),
+                            _ => "O-O"
                         );
                     }
                 }
@@ -124,7 +125,12 @@ internal static class ChessSpecialMoves
                                     x, y + 2 * Math.Sign(castlePos.y - y),
                                     moveType,
                                     board,
-                                    GetResult(castleUnit, x, y + Math.Sign(castlePos.y - y), board)
+                                    GetResult(castleUnit, x, y + Math.Sign(castlePos.y - y)),
+                                    move => 
+                                        move.NewX < move.OldX 
+                                        || move.NewY < move.OldY
+                                        ? "O-O-O"
+                                        : "O-O"
                                 );
                             }
                         }
@@ -147,8 +153,13 @@ internal static class ChessSpecialMoves
                                     x + 2 * Math.Sign(castlePos.x - x), y,
                                     moveType,
                                     board,
-                                    GetResult(castleUnit, x + Math.Sign(castlePos.x - x), y, board)
-                                );
+                                    GetResult(castleUnit, x + Math.Sign(castlePos.x - x), y),
+									move =>
+										move.NewX < move.OldX
+										|| move.NewY < move.OldY
+										? "O-O-O"
+										: "O-O"
+								);
                             }
                         }
                     }

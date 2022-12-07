@@ -106,10 +106,23 @@ Board DoInput(Board board, List<Move> availableMoves)
 	while (true)
 	{
 		var inputMove = Console.ReadLine()!.Trim();
+
+		if (availableMoves.Any(x => x.Notation == inputMove))
+		{
+			return board.ApplyMove(availableMoves.First(x => x.Notation == inputMove));
+		}
+
 		var match = Regex.Match(inputMove, @"([a-z]\d?)??([A-Z])?x?([a-z]\d)");
 		if (match is null || match == Match.Empty)
 		{
-			Console.WriteLine("invalid pattern");
+			if (int.TryParse(inputMove, out var x))
+			{
+				return board.ApplyMove(availableMoves[x]);
+			}
+			else
+			{
+				Console.WriteLine("invalid pattern");
+			}
 		}
 		else
 		{
@@ -172,9 +185,9 @@ Board DoRandom(Board board, List<Move> availableMoves)
 void PrintMoves(List<Move> availableMoves)
 {
 	Console.WriteLine("Available moves:");
-	foreach (var move in availableMoves)
+	foreach (var (move, i) in availableMoves.Select((x, i) => (x, i)))
 	{
-		Console.WriteLine($" - {move.Notation}");
+		Console.WriteLine($"{i}. {move.Notation}");
 	}
 }
 
@@ -196,10 +209,10 @@ while (true)
 	}
 
 	availableMoves = board.GetAvailableMoves(team).ToList();
-	PrintMoves(availableMoves);
-	//DoRandom(board, availableMoves);
-	PrintBoard(board);
-	board = DoInput(board, availableMoves);
+	//PrintMoves(availableMoves);
+	board = DoRandom(board, availableMoves);
+	//PrintBoard(board);
+	//board = DoInput(board, availableMoves);
 	team = board.ToMove;
 
 	if (board.EndResult != Rule.Ongoing)

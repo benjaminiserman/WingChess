@@ -144,7 +144,7 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 		};
 
 		var result = move.Result;
-		result ??= move.MoveType.Result;
+		result ??= move.MoveType.DefaultResult;
 		result(newBoard, move);
 
 		newBoard.History.Add(move);

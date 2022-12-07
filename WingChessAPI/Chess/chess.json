@@ -39,7 +39,7 @@
 	  "shortform": "l*1/2"
 	},
 	"pawn": {
-	  "tags": [ "pawn", "can_promote" ],
+	  "tags": [ "pawn", "can_promote", "can_promote_knight", "can_promote_bishop", "can_promote_rook", "can_promote_queen" ],
 	  "value": 1,
 	  "shortform": "m0/+1, c1/+1",
 	  "special_moves": [
@@ -49,10 +49,10 @@
 		},
 		{
 		  "shortform": "im0/+2",
-		  "tags": [ "en_passant" ]
+		  "tags": [ "en_passantable" ]
 		}
 	  ],
-	  "macros": "WingChessAPI.Chess::AllNonRoyalPromotion"
+	  "macros": [ "WingChessAPI.Chess::PromotionWrapper" ]
 	}
   },
   "rules": {
