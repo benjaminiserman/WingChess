@@ -12,7 +12,7 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 	public List<Board> BoardHistory { get; set; } = new();
 	public int? XSize { get; private set; }
 	public int? YSize { get; private set; }
-	public bool AllowOutOfTimePlay { get; set; } = false;
+	public bool AllowOutOfTurnPlay { get; set; } = false;
 	public string EndResult { get; private set; } = Rule.Ongoing;
 
 	private Func<int, int, string>? _getNotationField = null;
@@ -68,7 +68,7 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 		_transformDeltaXField = board._transformDeltaXField;
 		_transformDeltaYField = board._transformDeltaYField;
 		_withinBoardField = board._withinBoardField;
-		AllowOutOfTimePlay = board.AllowOutOfTimePlay;
+		AllowOutOfTurnPlay = board.AllowOutOfTurnPlay;
 		EndResult = board.EndResult;
 	}
 
@@ -133,9 +133,9 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 			throw new($"Cannot apply move after game ended (with state {EndResult})");
 		}
 
-		if (move.Unit.Team != ToMove && !AllowOutOfTimePlay)
+		if (move.Unit.Team != ToMove && !AllowOutOfTurnPlay)
 		{
-			throw new($"{move.Unit.Team} attempted to play on {ToMove}'s turn. If this was intended, set AllowOutOfTimePlay to true.");
+			throw new($"{move.Unit.Team} attempted to play on {ToMove}'s turn. If this was intended, set AllowOutOfTurnPlay to true.");
 		}
 
 		Board newBoard = new(this, History, BoardHistory)
@@ -155,7 +155,7 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 			foreach (var rule in Game.EndStateRules)
 			{
 				newBoard.EndResult = rule.Method(newBoard);
-				if (EndResult != Rule.Ongoing)
+				if (newBoard.EndResult != Rule.Ongoing)
 				{
 					break;
 				}
@@ -166,6 +166,26 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 	}
 
 	public UnitType GetUnitType(Unit unit) => Game.UnitSet[unit.Name];
+
+	public bool StructuralEquals(Board b)
+	{
+		if (Units.Count != b.Units.Count)
+		{
+			return false;
+		}
+
+		foreach (var (x, y) in b.Units.Keys)
+		{
+			if (!Units.ContainsKey((x, y)) 
+				|| !this[x, y].StructuralEquals(b[x, y]))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public IEnumerator<((int x, int y) pos, Unit unit)> GetEnumerator()
 	{
 		foreach (var kvp in Units)

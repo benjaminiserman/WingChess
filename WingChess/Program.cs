@@ -209,10 +209,10 @@ while (true)
 	}
 
 	availableMoves = board.GetAvailableMoves(team).ToList();
-	//PrintMoves(availableMoves);
-	board = DoRandom(board, availableMoves);
-	//PrintBoard(board);
-	//board = DoInput(board, availableMoves);
+	PrintMoves(availableMoves);
+	PrintBoard(board);
+	board = DoInput(board, availableMoves);
+	//board = DoRandom(board, availableMoves);
 	team = board.ToMove;
 
 	if (board.EndResult != Rule.Ongoing)

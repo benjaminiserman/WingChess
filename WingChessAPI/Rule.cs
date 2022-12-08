@@ -9,6 +9,8 @@ public record Rule(string Name, string MethodName, bool AllowsRecursion)
 
 	public static string Illegal => "Illegal";
 	public static string Ongoing => "Ongoing";
+	public static string Win => "Win";
+	public static string Draw => "Draw";
 
 	public Rule(KeyValuePair<string, JToken?> kvp) : this
 	(

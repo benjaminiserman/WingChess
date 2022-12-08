@@ -64,18 +64,15 @@
   "end_states": {
 	"no_possible_moves": {
 	  "method": "WingChessAPI.Chess::NoPossibleMoves"
+	},
+	"dead_position": {
+	  "method": "WingChessAPI.Chess::DeadPosition"
+	},
+	"threefold_repetition": {
+	  "method": "WingChessAPI.Chess::ThreefoldRepetition"
+	},
+	"fifty_move_draw": {
+	  "method": "WingChessAPI.Chess::FiftyMovesWithoutCapture"
 	}
-	//"dead_position": {
-	//  "condition": "WingChessAPI.Chess::DeadPosition",
-	//  "result": "WingChessAPI.Chess::Draw"
-	//},
-	//"threefold_repetition": {
-	//  "condition": "WingChessAPI.Chess::ThreefoldRepetition",
-	//  "result": "WingChessAPI.Chess::Draw"
-	//},
-	//"fifty_move_draw": {
-	//  "condition": "WingChessAPI.Chess::FiftyMovesWithoutCapture",
-	//  "result": "WingChessAPI.Chess::Draw"
-	//}
   }
 }
