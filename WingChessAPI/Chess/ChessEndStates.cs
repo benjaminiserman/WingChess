@@ -7,6 +7,7 @@ internal static class ChessEndStates
 		if (!board.GetAvailableMoves().Any())
 		{
 			var nextToMove = board.Game.NextToMove(board.ToMove);
+			board.GetAvailableMoves(trace: true);
 			return ChessRules.CaptureWithTagPossible(board, nextToMove, "royal")
 				? $"{Rule.Win}_{nextToMove.Name}_Checkmate"
 				: $"{Rule.Draw}_Stalemate";

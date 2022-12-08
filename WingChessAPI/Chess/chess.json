@@ -14,7 +14,8 @@
 	  "shortform": "1/1, *1/0",
 	  "special_moves": [
 		{
-		  "method": "WingChessAPI.Chess::AbsoluteCastle"
+		  "method": "WingChessAPI.Chess::AbsoluteCastle",
+		  "_comment": "the method WingChessAPI.Chess::RelativeCastle is provided if you would prefer castling à la Chess480"
 		}
 	  ]
 	},

@@ -52,8 +52,13 @@ internal static class ChessSpecialMoves
         {
             var castler = board[x, y];
             if (!board.History.Any(m => m.Unit == castler))
-            { // $$$ add checks for check or squares attacked
-                var castlingUnits = board.BoardHistory[0]
+            {
+				if (ChessRules.MoveAllowedRoyalCapture(board.ApplyMove(new(board, x, y, x, y, moveType), isRecursive: true)) == Rule.Illegal) // no castling while checked $$$ replace with helper method call
+				{
+					yield break;
+				}
+
+				var castlingUnits = board.BoardHistory[0]
                     .Where(kvp => board.GetUnitType(kvp.unit).Tags.Contains("castle")
                         && kvp.unit.Team == castler.Team
                         && !board.History.Any(move => move.Unit == kvp.unit))
@@ -64,10 +69,11 @@ internal static class ChessSpecialMoves
                 var queenCastle = castlingUnits.FirstOrDefault(kvp => kvp.pos.x < x);
                 if (queenCastle != default
                     && board[1, homeRank] == Unit.Empty
-                    && board[2, homeRank] == Unit.Empty
-                    && board[3, homeRank] == Unit.Empty)
-                // $$$ add checks for attacked squares
-                {
+					&& board[2, homeRank] == Unit.Empty
+					&& ChessRules.MoveAllowedRoyalCapture(board.ApplyMove(new(board, x, y, 2, homeRank, moveType), isRecursive: true)) != Rule.Illegal
+					&& board[3, homeRank] == Unit.Empty
+					&& ChessRules.MoveAllowedRoyalCapture(board.ApplyMove(new(board, x, y, 3, homeRank, moveType), isRecursive: true)) != Rule.Illegal)
+				{
                     yield return new Move
                     (
                         board[x, y],
@@ -84,9 +90,9 @@ internal static class ChessSpecialMoves
                 var kingCastle = castlingUnits.FirstOrDefault(kvp => kvp.pos.x > x);
                 if (kingCastle != default
                     && board[6, homeRank] == Unit.Empty
-                    && board[5, homeRank] == Unit.Empty)
-                // $$$ add checks for attacked squares
-                {
+                    && board[5, homeRank] == Unit.Empty
+					&& ChessRules.MoveAllowedRoyalCapture(board.ApplyMove(new(board, x, y, 5, homeRank, moveType), isRecursive: true)) != Rule.Illegal)
+				{
                     yield return new(
                         board[x, y],
                         x, y,
@@ -108,22 +114,29 @@ internal static class ChessSpecialMoves
         IEnumerable<Move> GenerateMoves(Board board, int x, int y)
         {
             var castler = board[x, y];
+
             if (!board.History.Any(m => m.Unit == castler))
-            { // $$$ add checks for check or squares attacked
-                var castlingUnits = board.BoardHistory[0]
+            {
+				if (ChessRules.MoveAllowedRoyalCapture(board.ApplyMove(new(board, x, y, x, y, moveType), isRecursive: true)) == Rule.Illegal) // no castling while checked $$$ replace with helper method call
+				{
+					yield break;
+				}
+
+				var castlingUnits = board.BoardHistory[0]
                     .Where(kvp => board.GetUnitType(kvp.unit).Tags.Contains("castle")
                         && kvp.unit.Team == castler.Team
                         && !board.History.Any(move => move.Unit == kvp.unit))
                     .Select(kvp => kvp);
                 foreach (var (castlePos, castleUnit) in castlingUnits)
                 {
-                    // $$$ check for attacked squares
                     var breakFlag = false;
                     if (castlePos.x == x)
                     {
                         foreach (var i in castlePos.y..y)
                         {
-                            if (i != castlePos.y && board[x, i] != Unit.Empty)
+                            if (i != castlePos.y 
+                                && (board[x, i] != Unit.Empty
+                                    || ChessRules.MoveAllowedRoyalCapture(board.ApplyMove(new(board, x, y, x, i, moveType), isRecursive: true)) == Rule.Illegal))
                             {
                                 breakFlag = true;
                                 break;
@@ -151,8 +164,9 @@ internal static class ChessSpecialMoves
                     {
                         foreach (var i in castlePos.x..x)
                         {
-                            if (i != castlePos.x && board[i, y] != Unit.Empty)
-                            {
+                            if (i != castlePos.x && (board[i, y] != Unit.Empty
+									|| ChessRules.MoveAllowedRoyalCapture(board.ApplyMove(new(board, x, y, i, y, moveType), isRecursive: true)) == Rule.Illegal))
+							{
                                 breakFlag = true;
                                 break;
                             }

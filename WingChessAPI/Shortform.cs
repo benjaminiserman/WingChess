@@ -130,13 +130,8 @@ public static class Shortform
 		{
 			foreach (var (deltaX, deltaY) in deltaSet)
 			{
-				if (Math.Abs(deltaX) == Math.Abs(deltaY))
+				if (Math.Abs(deltaX) == Math.Abs(deltaY) || deltaX == 0 || deltaY == 0)
 				{
-					if (deltaX == 0)
-					{
-						throw new("Move 0/0 doesn't work.");
-					}
-
 					var sx = Math.Sign(board.TransformDeltaX(deltaX, board[x, y].Team));
 					var sy = Math.Sign(board.TransformDeltaY(deltaY, board[x, y].Team));
 

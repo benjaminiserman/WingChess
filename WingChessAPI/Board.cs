@@ -102,7 +102,7 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 		YSize = y;
 	}
 
-	public IEnumerable<Move> GetAvailableMoves(Team? team = null, bool isRecursive = false)
+	public IEnumerable<Move> GetAvailableMoves(Team? team = null, bool isRecursive = false, bool trace = false)
 	{
 		team ??= ToMove;
 
@@ -115,9 +115,7 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 				foreach (var move in GetUnitType(unit).GenerateMoves(this, x, y))
 				{
 					var testBoard = ApplyMove(move, true);
-					if (!Game.Rules
-						.Any(rule => (rule.AllowsRecursion || !isRecursive) 
-							&& rule.Method(testBoard) == Rule.Illegal))
+					if (!Game.Rules.Any(rule => (!isRecursive || rule.AllowsRecursion) && rule.Method(testBoard) == Rule.Illegal))
 					{
 						yield return move;
 					}
@@ -155,6 +153,12 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 			foreach (var rule in Game.EndStateRules)
 			{
 				newBoard.EndResult = rule.Method(newBoard);
+				//if (newBoard.EndResult.StartsWith(Rule.Draw))
+				//{
+				//	Debug.PrintBoard(newBoard);
+				//	throw new();
+				//}
+
 				if (newBoard.EndResult != Rule.Ongoing)
 				{
 					break;
