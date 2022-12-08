@@ -1,7 +1,7 @@
 {
   "default_board": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   "assembly": "", // put a dll name like Chess.dll here to load a dll
-  "tags": [ "absolute_castle" ],
+  "tags": [],
   "variables": {
 	"White_home_rank": 0,
 	"Black_home_rank": 7,
@@ -14,7 +14,7 @@
 	  "shortform": "1/1, *1/0",
 	  "special_moves": [
 		{
-		  "method": "WingChessAPI.Chess::Castle"
+		  "method": "WingChessAPI.Chess::AbsoluteCastle"
 		}
 	  ]
 	},

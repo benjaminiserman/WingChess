@@ -32,22 +32,22 @@ internal static class ChessSpecialMoves
         return GenerateMoves;
     }
 
-    public static GenerateMovesDelegate Castle(GenerateMovesDelegate _, MoveType moveType)
+    public static ResultDelegate GetCastlingResult(Unit castle, int castleX, int castleY)
     {
-        ResultDelegate GetResult(Unit castle, int castleX, int castleY)
+        void Result(Board board, Move move)
         {
-            void Result(Board board, Move move)
-            {
-                board[castle] = Unit.Empty;
-                board[move.OldX, move.OldY] = Unit.Empty;
+            board[castle] = Unit.Empty;
+            board[move.OldX, move.OldY] = Unit.Empty;
 
-                board[castleX, castleY] = castle;
-                board[move.NewX, move.NewY] = move.Unit;
-            }
-
-            return Result;
+            board[castleX, castleY] = castle;
+            board[move.NewX, move.NewY] = move.Unit;
         }
 
+        return Result;
+    }
+
+    public static GenerateMovesDelegate AbsoluteCastle(GenerateMovesDelegate _, MoveType moveType)
+    {
         IEnumerable<Move> GenerateMoves(Board board, int x, int y)
         {
             var castler = board[x, y];
@@ -59,108 +59,120 @@ internal static class ChessSpecialMoves
                         && !board.History.Any(move => move.Unit == kvp.unit))
                     .Select(kvp => kvp);
 
-                if (board.Tags.Contains("absolute_castle"))
+                var homeRank = (int)board.Variables[$"{castler.Team.Name}_home_rank"];
+                // queen castle
+                var queenCastle = castlingUnits.FirstOrDefault(kvp => kvp.pos.x < x);
+                if (queenCastle != default
+                    && board[1, homeRank] == Unit.Empty
+                    && board[2, homeRank] == Unit.Empty
+                    && board[3, homeRank] == Unit.Empty)
+                // $$$ add checks for attacked squares
                 {
-                    var homeRank = (int)board.Variables[$"{castler.Team.Name}_home_rank"];
-                    // queen castle
-                    var queenCastle = castlingUnits.FirstOrDefault(kvp => kvp.pos.x < x);
-                    if (queenCastle != default
-                        && board[1, homeRank] == Unit.Empty
-                        && board[2, homeRank] == Unit.Empty
-                        && board[3, homeRank] == Unit.Empty)
-                    // $$$ add checks for attacked squares
-                    {
-                        yield return new Move
-                        (
-                            board[x, y],
-                            x, y,
-                            2, homeRank,
-                            moveType,
-                            board,
-                            GetResult(queenCastle.unit, 3, homeRank),
-                            _ => "O-O-O"
-                        );
-                    }
-
-                    // king castle
-                    var kingCastle = castlingUnits.FirstOrDefault(kvp => kvp.pos.x > x);
-                    if (kingCastle != default
-                        && board[6, homeRank] == Unit.Empty
-                        && board[5, homeRank] == Unit.Empty)
-                    // $$$ add checks for attacked squares
-                    {
-                        yield return new(
-                            board[x, y],
-                            x, y,
-                            6, homeRank,
-                            moveType,
-                            board,
-                            GetResult(kingCastle.unit, 5, homeRank),
-                            _ => "O-O"
-                        );
-                    }
+                    yield return new Move
+                    (
+                        board[x, y],
+                        x, y,
+                        2, homeRank,
+                        moveType,
+                        board,
+                        GetCastlingResult(queenCastle.unit, 3, homeRank),
+                        _ => "O-O-O"
+                    );
                 }
-                else
-                {
-                    foreach (var (castlePos, castleUnit) in castlingUnits)
-                    {
-                        // $$$ check for attacked squares
-                        var breakFlag = false;
-                        if (castlePos.x == x)
-                        {
-                            foreach (var i in castlePos.y..y)
-                            {
-                                if (i != castlePos.y && board[x, i] != Unit.Empty)
-                                {
-                                    breakFlag = true;
-                                    break;
-                                }
-                            }
 
-                            if (!breakFlag)
+                // king castle
+                var kingCastle = castlingUnits.FirstOrDefault(kvp => kvp.pos.x > x);
+                if (kingCastle != default
+                    && board[6, homeRank] == Unit.Empty
+                    && board[5, homeRank] == Unit.Empty)
+                // $$$ add checks for attacked squares
+                {
+                    yield return new(
+                        board[x, y],
+                        x, y,
+                        6, homeRank,
+                        moveType,
+                        board,
+                        GetCastlingResult(kingCastle.unit, 5, homeRank),
+                        _ => "O-O"
+                    );
+                }
+            }
+        }
+
+        return GenerateMoves;
+    }
+
+    public static GenerateMovesDelegate RelativeCastle(GenerateMovesDelegate _, MoveType moveType)
+    {
+        IEnumerable<Move> GenerateMoves(Board board, int x, int y)
+        {
+            var castler = board[x, y];
+            if (!board.History.Any(m => m.Unit == castler))
+            { // $$$ add checks for check or squares attacked
+                var castlingUnits = board.BoardHistory[0]
+                    .Where(kvp => board.GetUnitType(kvp.unit).Tags.Contains("castle")
+                        && kvp.unit.Team == castler.Team
+                        && !board.History.Any(move => move.Unit == kvp.unit))
+                    .Select(kvp => kvp);
+                foreach (var (castlePos, castleUnit) in castlingUnits)
+                {
+                    // $$$ check for attacked squares
+                    var breakFlag = false;
+                    if (castlePos.x == x)
+                    {
+                        foreach (var i in castlePos.y..y)
+                        {
+                            if (i != castlePos.y && board[x, i] != Unit.Empty)
                             {
-                                yield return new(
-                                    board[x, y],
-                                    x, y,
-                                    x, y + 2 * Math.Sign(castlePos.y - y),
-                                    moveType,
-                                    board,
-                                    GetResult(castleUnit, x, y + Math.Sign(castlePos.y - y)),
-                                    move => 
-                                        move.NewX < move.OldX 
-                                        || move.NewY < move.OldY
-                                        ? "O-O-O"
-                                        : "O-O"
-                                );
+                                breakFlag = true;
+                                break;
                             }
                         }
-                        else if (castlePos.y == y)
-                        {
-                            foreach (var i in castlePos.x..x)
-                            {
-                                if (i != castlePos.x && board[i, y] != Unit.Empty)
-                                {
-                                    breakFlag = true;
-                                    break;
-                                }
-                            }
 
-                            if (!breakFlag)
+                        if (!breakFlag)
+                        {
+                            yield return new(
+                                board[x, y],
+                                x, y,
+                                x, y + 2 * Math.Sign(castlePos.y - y),
+                                moveType,
+                                board,
+                                GetCastlingResult(castleUnit, x, y + Math.Sign(castlePos.y - y)),
+                                move =>
+                                    move.NewX < move.OldX
+                                    || move.NewY < move.OldY
+                                    ? "O-O-O"
+                                    : "O-O"
+                            );
+                        }
+                    }
+                    else if (castlePos.y == y)
+                    {
+                        foreach (var i in castlePos.x..x)
+                        {
+                            if (i != castlePos.x && board[i, y] != Unit.Empty)
                             {
-                                yield return new(
-                                    board[x, y],
-                                    x, y,
-                                    x + 2 * Math.Sign(castlePos.x - x), y,
-                                    moveType,
-                                    board,
-                                    GetResult(castleUnit, x + Math.Sign(castlePos.x - x), y),
-									move =>
-										move.NewX < move.OldX
-										|| move.NewY < move.OldY
-										? "O-O-O"
-										: "O-O"
-								);
+                                breakFlag = true;
+                                break;
                             }
+                        }
+
+                        if (!breakFlag)
+                        {
+                            yield return new(
+                                board[x, y],
+                                x, y,
+                                x + 2 * Math.Sign(castlePos.x - x), y,
+                                moveType,
+                                board,
+                                GetCastlingResult(castleUnit, x + Math.Sign(castlePos.x - x), y),
+                                move =>
+                                    move.NewX < move.OldX
+                                    || move.NewY < move.OldY
+                                    ? "O-O-O"
+                                    : "O-O"
+                            );
                         }
                     }
                 }
