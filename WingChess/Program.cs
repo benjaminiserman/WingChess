@@ -1,7 +1,9 @@
 ﻿using System.Text.RegularExpressions;
 using WingChessAPI;
 
-var chess = Game.Chess;
+var game = Game.Chess;
+//var game = new Game();
+//game.LoadGame("test.json");
 
 void PrintBoard(Board board)
 {
@@ -191,7 +193,7 @@ void PrintMoves(List<Move> availableMoves)
 	}
 }
 
-var board = FenConverter.ConvertFen(chess.DefaultBoardFen!, chess.FenMap);
+var board = FenConverter.ConvertFen(game, game.DefaultBoardFen!, game.FenMap);
 
 var team = Team.White;
 while (true)

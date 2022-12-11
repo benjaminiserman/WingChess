@@ -96,7 +96,7 @@ public class Game
         }
     }
 
-    void LoadGame(string loadFilePath)
+    public void LoadGame(string loadFilePath)
     {
         var json = JObject.Parse(File.ReadAllText(loadFilePath));
         DefaultBoardFen = (string?)json["default_board"];

@@ -2,9 +2,9 @@
 
 public static class FenConverter
 {
-	public static Board ConvertFen(string fenString, Dictionary<char, UnitType> fenMap)
+	public static Board ConvertFen(Game game, string fenString)
 	{
-		var board = new Board(Game.Chess);
+		var board = new Board(game);
 		var split = fenString.Split();
 		var piecePlacement = split[0];
 		var activeColor = split[1];
@@ -26,7 +26,7 @@ public static class FenConverter
 				}
 				else
 				{
-					board[fileId, rankId] = fenMap[c].CreateUnit(
+					board[fileId, rankId] = game.FenMap[c].CreateUnit(
 						char.IsUpper(c)
 							? Team.White
 							: Team.Black,
