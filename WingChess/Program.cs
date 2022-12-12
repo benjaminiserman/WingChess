@@ -193,7 +193,7 @@ void PrintMoves(List<Move> availableMoves)
 	}
 }
 
-var board = FenConverter.ConvertFen(game, game.DefaultBoardFen!, game.FenMap);
+var board = FenConverter.ConvertFen(game, game.DefaultBoardFen!);
 
 var team = Team.White;
 while (true)
