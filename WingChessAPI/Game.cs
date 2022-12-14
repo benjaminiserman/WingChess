@@ -1,4 +1,9 @@
 ﻿namespace WingChessAPI;
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 
 public class Game
@@ -12,7 +17,7 @@ public class Game
     public Dictionary<char, UnitType> FenMap { get; set; } = new();
     public int MaxMove { get; set; } = 16;
 
-	private Func<Team, Team>? _nextToMoveField = null;
+    private Func<Team, Team>? _nextToMoveField = null;
     public Func<Team, Team> NextToMove
     {
         get => _nextToMoveField ?? DefaultNextToMove;
@@ -31,17 +36,17 @@ public class Game
             if (_cachedChess is null)
             {
                 ReloadChess();
-			}
-			
+            }
+
             return _cachedChess!;
         }
     }
 
     public static void ReloadChess()
     {
-		_cachedChess = new();
-		_cachedChess.LoadGame("Chess/chess.json");
-	}
+        _cachedChess = new();
+        _cachedChess.LoadGame("Chess/chess.json");
+    }
 
     private void AssignFenToUnits()
     {
@@ -101,14 +106,14 @@ public class Game
         var json = JObject.Parse(File.ReadAllText(loadFilePath));
         DefaultBoardFen = (string?)json["default_board"];
 
-		var tags = (JArray?)json["tags"];
-		if (tags is not null)
-		{
-			foreach (var tag in tags)
-			{
-				DefaultTags.Add((string)tag!);
-			}
-		}
+        var tags = (JArray?)json["tags"];
+        if (tags is not null)
+        {
+            foreach (var tag in tags)
+            {
+                DefaultTags.Add((string)tag!);
+            }
+        }
 
         var variables = (JObject?)json["variables"];
         if (variables is not null)
@@ -119,7 +124,7 @@ public class Game
             }
         }
 
-		if (json["unit_set"] is JObject unit_set_data)
+        if (json["unit_set"] is JObject unit_set_data)
         {
             foreach (var kvp in unit_set_data)
             {
@@ -142,9 +147,9 @@ public class Game
 
                 newUnit.Value = (int?)token["value"];
 
-				newUnit.CompileMovesFromShortform();
+                newUnit.CompileMovesFromShortform();
 
-				var specialMoves = (JArray?)token["special_moves"];
+                var specialMoves = (JArray?)token["special_moves"];
                 if (specialMoves is not null)
                 {
                     var specialMovesList = specialMoves
@@ -155,18 +160,18 @@ public class Game
                     newUnit.CompileSpecialMoves();
                 }
 
-				var macros = (JArray?)token["macros"];
-				if (macros is not null)
-				{
-					var macrosList = macros
-						.Select(x => (string)x!)
-						.ToList();
+                var macros = (JArray?)token["macros"];
+                if (macros is not null)
+                {
+                    var macrosList = macros
+                        .Select(x => (string)x!)
+                        .ToList();
 
-					newUnit.MacroNames = macrosList;
+                    newUnit.MacroNames = macrosList;
                     newUnit.CompileMacros();
-				}
+                }
 
-				UnitSet.Add(newUnit.Name, newUnit);
+                UnitSet.Add(newUnit.Name, newUnit);
             }
 
             AssignFenToUnits();
@@ -181,13 +186,13 @@ public class Game
             }
         }
 
-		if (json["end_states"] is JObject endStateData)
-		{
-			foreach (var kvp in endStateData)
-			{
-				EndStateRules.Add(new(kvp));
-				EndStateRules[^1].Compile();
-			}
-		}
-	}
+        if (json["end_states"] is JObject endStateData)
+        {
+            foreach (var kvp in endStateData)
+            {
+                EndStateRules.Add(new(kvp));
+                EndStateRules[^1].Compile();
+            }
+        }
+    }
 }

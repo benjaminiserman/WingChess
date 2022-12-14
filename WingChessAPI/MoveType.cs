@@ -1,10 +1,13 @@
 ﻿namespace WingChessAPI;
 
+using System.Collections.Generic;
+using WingChessAPI.Delegates;
+
 public class MoveType
 {
 	public GenerateMovesDelegate GenerateMoves { get; private set; } = EmptyMoveGenerator.Instance;
 	public string? ShortForm = null;
-	public ResultDelegate DefaultResult { get; private set; } = WingChessAPI.DefaultResult.Instance;
+	public ResultDelegate DefaultResult { get; private set; } = Delegates.DefaultResult.Instance;
 	public List<string> Tags { get; set; } = new();
 
 	public MoveType(GenerateMovesWrapperDelegate? generateMovesWrapper = null, string? shortForm = null)
@@ -17,9 +20,9 @@ public class MoveType
 			shortformMoves = Shortform.CompileShortform(ShortForm, this);
 		}
 
-		GenerateMoves = 
-			generateMovesWrapper is null 
-			? shortformMoves 
+		GenerateMoves =
+			generateMovesWrapper is null
+			? shortformMoves
 			: generateMovesWrapper(shortformMoves, this);
 	}
 

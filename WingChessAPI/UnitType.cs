@@ -1,7 +1,11 @@
 ﻿namespace WingChessAPI;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
-using System.Reflection;
+using WingChessAPI.Delegates;
+using WingChessAPI.Helpers;
 
 public class UnitType
 {
@@ -56,17 +60,17 @@ public class UnitType
             if (move.Method is not null)
             {
                 var methodFound = AssemblyHelper.AssertSingletonAndGetValue(AssemblyHelper.GetMethods(move.Method), Name, move.Method, "move");
-				wrapper = (GenerateMovesWrapperDelegate)Delegate.CreateDelegate(typeof(GenerateMovesWrapperDelegate), methodFound);
-			}
+                wrapper = (GenerateMovesWrapperDelegate)Delegate.CreateDelegate(typeof(GenerateMovesWrapperDelegate), methodFound);
+            }
 
-			var moveType = new MoveType(wrapper, move.Shortform);
-			if (move.Tags is List<string> tags && tags.Count != 0)
-			{
-				moveType.Tags = tags;
-			}
+            var moveType = new MoveType(wrapper, move.Shortform);
+            if (move.Tags is List<string> tags && tags.Count != 0)
+            {
+                moveType.Tags = tags;
+            }
 
             MoveTypes.Add(moveType);
-		}
+        }
     }
 
     internal void CompileMacros()
@@ -83,7 +87,7 @@ public class UnitType
         }
     }
 
-	public Unit CreateUnit(Team team, string id) => new(Name, team, id);
+    public Unit CreateUnit(Team team, string id) => new(Name, team, id);
 }
 
 /*self.name: str = name

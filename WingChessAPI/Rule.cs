@@ -1,6 +1,9 @@
 ﻿namespace WingChessAPI;
 
+using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using WingChessAPI.Helpers;
 
 public record Rule(string Name, string MethodName, bool AllowsRecursion)
 {
@@ -18,7 +21,7 @@ public record Rule(string Name, string MethodName, bool AllowsRecursion)
 		(string?)kvp.Value?["method"] ?? throw new($"Compilation failed on rule {kvp.Key}. Rule must provide method."),
 		(bool?)kvp.Value?["allow_recursion"] ?? true
 	)
-	{ }		
+	{ }
 
 	public void Compile()
 	{

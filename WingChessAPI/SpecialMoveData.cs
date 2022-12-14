@@ -1,5 +1,7 @@
 ﻿namespace WingChessAPI;
 
+using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 
 public record struct SpecialMoveData(string? Method, string? Shortform, List<string> Tags)

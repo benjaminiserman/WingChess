@@ -1,5 +1,9 @@
 ﻿namespace WingChessAPI.Chess;
 
+using System.Collections.Generic;
+using System.Linq;
+using WingChessAPI.Delegates;
+
 internal static class ChessUnitMacros
 {
 	public static GenerateMovesDelegate PromotionWrapper(GenerateMovesDelegate moveFunction, MoveType _)
@@ -41,7 +45,7 @@ internal static class ChessUnitMacros
 
 				if (yieldCount == 0)
 				{
-					yield return move;	
+					yield return move;
 				}
 			}
 		}

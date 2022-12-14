@@ -1,5 +1,9 @@
 ﻿namespace WingChessAPI.Chess;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 internal static class ChessEndStates
 {
 	public static string NoPossibleMoves(Board board)
@@ -40,7 +44,7 @@ internal static class ChessEndStates
 			return Rule.Ongoing;
 		}
 
-		return board.History.TakeLast(moves).Any(move => move.Capture)
+		return board.History.TakeLast(moves).Any(move => move.IsCapture(move.Board, move))
 			? Rule.Ongoing
 			: $"{Rule.Draw}_{movesWord}MovesWithoutCapture";
 	}

@@ -1,5 +1,7 @@
 ﻿namespace WingChessAPI.Chess;
 
+using System.Linq;
+
 internal static class ChessRules
 {
 	public static bool CaptureWithTagPossible(Board board, Team team, string tag)

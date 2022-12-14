@@ -1,6 +1,9 @@
 ﻿namespace WingChessAPI;
 
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 {
@@ -180,7 +183,7 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 
 		foreach (var (x, y) in b.Units.Keys)
 		{
-			if (!Units.ContainsKey((x, y)) 
+			if (!Units.ContainsKey((x, y))
 				|| !this[x, y].StructuralEquals(b[x, y]))
 			{
 				return false;
@@ -239,7 +242,7 @@ public class Board : IEnumerable<((int x, int y) pos, Unit unit)>
 		set
 		{
 			var (x, y) = Units.FirstOrDefault(x => x.Value.Id == id).Key;
-			this[x, y] = value;	
+			this[x, y] = value;
 		}
 	}
 

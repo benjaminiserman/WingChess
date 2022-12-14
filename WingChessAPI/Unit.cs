@@ -1,5 +1,7 @@
 ﻿namespace WingChessAPI;
 
+using System;
+
 public struct Unit
 {
 	public string Name { get; set; }
